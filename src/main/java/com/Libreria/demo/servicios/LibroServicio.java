@@ -28,19 +28,20 @@ public class LibroServicio {
 
     //GUARDAR UN LIBRO:creación
     @Transactional(propagation = Propagation.NESTED)
-    public Libro guardar(long ISBN, String titulo, Integer anio, String idAutor, String idEditorial) throws ErrorServicio {
+    public Libro guardar(long ISBN, String titulo, Integer anio,Integer ejemplares, String idAutor, String idEditorial) throws ErrorServicio {
 
         //creo una 
         Autor autor = autorRepositorio.findById(idAutor).get();
         Editorial editorial = editorialRepositorio.findById(idAutor).get();
         //VALIDACIONES   
-        validar(titulo, 0, anio, idAutor, idEditorial);
+        validar(titulo, 0, anio, ejemplares, idAutor, idEditorial);
         Libro libro = new Libro();
 
         //SETEO DE ATRIBUTOS    
         libro.setISBN(ISBN);
         libro.setTitulo(titulo);
         libro.setAnio(anio);
+        libro.setEjemplares(ejemplares);
         libro.setAutor(autor);
         libro.setEditorial(editorial);
         libro.setAlta(true);
@@ -60,7 +61,7 @@ public class LibroServicio {
     @Transactional(propagation = Propagation.NESTED)
     public void modificar(String id, String titulo, long ISBN, Integer anio, Integer ejemplares, Integer ejemplaresPrestados, Integer ejemplaresRestantes, String idAutor, String idEditorial) throws ErrorServicio {
 
-        validar(titulo, ISBN, anio, idAutor, idEditorial);
+        validar(titulo, 0, anio, ejemplares, idAutor, idEditorial);
         Optional<Libro> respuesta = libroRepositorio.findById(id);
         Optional<Autor> respuestaAutor = autorRepositorio.findById(idAutor);
         Optional<Editorial> respuestaEditorial = editorialRepositorio.findById(idEditorial);
@@ -130,7 +131,7 @@ public class LibroServicio {
     }
 
     //VALIDAR
-    public void validar(String titulo, long ISBN, Integer anio, String idAutor, String idEditorial) throws ErrorServicio {
+    public void validar(String titulo, long ISBN, Integer anio,Integer ejemplares, String idAutor, String idEditorial) throws ErrorServicio {
 
         if (ISBN < 0) {
             throw new ErrorServicio("Debe indicar el ISBN correctamente");
@@ -139,15 +140,17 @@ public class LibroServicio {
         if (titulo == null || titulo.trim().isEmpty()) {
             throw new ErrorServicio("Debe indicar el título del libro");
         }
-
+        if (ejemplares == null){
+            throw new ErrorServicio ("Los ejemplares no pueden ser nulos");
+        }
         if (anio == null) {
             throw new ErrorServicio("Debe indicar el año de emisión");
         }
 
-        if (idAutor == null) {
+        if (idAutor.isEmpty()|| idAutor == null) {
             throw new ErrorServicio("No se recibe el Id del autor");
         }
-        if (idEditorial == null) {
+        if (idEditorial.isEmpty()|| idEditorial == null) {
             throw new ErrorServicio("No se recibe el Id de la editorial");
         }
     }
